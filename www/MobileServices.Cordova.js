@@ -34219,7 +34219,7 @@ function createIntermediateIframeForLogin(runtimeOrigin, completionOrigin) {
     document.body.appendChild(frame);
     return frame;
 }
-},{"../Utilities/PostMessageExchange":185}],166:[function(_dereq_,module,exports){
+},{"../Utilities/PostMessageExchange":186}],166:[function(_dereq_,module,exports){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
@@ -34495,7 +34495,7 @@ function isWebAuthBrokerAvailable() {
         window.Windows.Security.Authentication.Web.WebAuthenticationBroker);
 }
 
-},{"../Utilities/Extensions":184}],168:[function(_dereq_,module,exports){
+},{"../Utilities/Extensions":185}],168:[function(_dereq_,module,exports){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
@@ -35054,7 +35054,7 @@ MobileServiceClient._userAgent = Platform.getUserAgent();
 // Define the module exports
 module.exports = MobileServiceClient;
 
-},{"./MobileServiceLogin":169,"./MobileServiceTable":170,"./Platform":178,"./Push/Push":181,"./Utilities/Extensions":184,"./Utilities/Validate":187,"./constants":189,"./sync/MobileServiceSyncContext":193,"./sync/MobileServiceSyncTable":194}],169:[function(_dereq_,module,exports){
+},{"./MobileServiceLogin":169,"./MobileServiceTable":170,"./Platform":178,"./Push/Push":182,"./Utilities/Extensions":185,"./Utilities/Validate":188,"./constants":190,"./sync/MobileServiceSyncContext":194,"./sync/MobileServiceSyncTable":195}],169:[function(_dereq_,module,exports){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
@@ -35516,7 +35516,7 @@ function loginWithLoginControl(login, provider, useSingleSignOn, parameters, cal
 // Define the module exports
 module.exports = MobileServiceLogin;
 
-},{"./Platform":178,"./Utilities/Extensions":184,"./Utilities/Validate":187}],170:[function(_dereq_,module,exports){
+},{"./Platform":178,"./Utilities/Extensions":185,"./Utilities/Validate":188}],170:[function(_dereq_,module,exports){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
@@ -35656,7 +35656,7 @@ MobileServiceTable.prototype._read = function (query, parameters, callback) {
                 
                 if (tableName !== components.table) {
                     var message = _.format(Platform.getResourceString("MobileServiceTable_ReadMismatchedQueryTables"), tableName, components.table);
-                    callback(_.createError(message), null);
+                    callback(new Error(message), null);
                     return;
                 }
 
@@ -35952,7 +35952,7 @@ MobileServiceTable.prototype.refresh = Platform.async(
         if (!_.isValidId(instance[idPropertyName], idPropertyName))
         {
             if (typeof instance[idPropertyName] === 'string' && instance[idPropertyName] !== '') {
-                throw new Error('Invalid ID: ' + idPropertyName);
+                throw new Error(idPropertyName + ' "' + instance[idPropertyName] + '" is not valid.');
             } else {
                 callback(null, instance);
             }
@@ -36009,7 +36009,7 @@ MobileServiceTable.prototype.refresh = Platform.async(
                         var message =_.format(
                             Platform.getResourceString("MobileServiceTable_NotSingleObject"),
                             idPropertyName);
-                        callback(_.createError(message), null);
+                        callback(new Error(message), null);
                     }
 
                     result = Platform.allowPlatformToMutateOriginal(instance, result);
@@ -36244,7 +36244,7 @@ function addQueryParametersFeaturesIfApplicable(features, userQueryParameters) {
 // Define the module exports
 module.exports = MobileServiceTable;
 
-},{"./Platform":178,"./Utilities/Extensions":184,"./Utilities/Validate":187,"./constants":189,"./tableHelper":200,"azure-query-js":33}],171:[function(_dereq_,module,exports){
+},{"./Platform":178,"./Utilities/Extensions":185,"./Utilities/Validate":188,"./constants":190,"./tableHelper":201,"azure-query-js":33}],171:[function(_dereq_,module,exports){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
@@ -36852,7 +36852,7 @@ MobileServiceSqliteStore.ColumnType = ColumnType;
 // Define the module exports
 module.exports = MobileServiceSqliteStore;
 
-},{".":172,"../../Utilities/Extensions":184,"../../Utilities/Validate":187,"../../Utilities/taskRunner":188,"../../sync/ColumnType":192,"./sqliteSerializer":174,"./storeHelper":175,"azure-odata-sql":23,"azure-query-js":33}],172:[function(_dereq_,module,exports){
+},{".":172,"../../Utilities/Extensions":185,"../../Utilities/Validate":188,"../../Utilities/taskRunner":189,"../../sync/ColumnType":193,"./sqliteSerializer":174,"./storeHelper":175,"azure-odata-sql":23,"azure-query-js":33}],172:[function(_dereq_,module,exports){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
@@ -36866,16 +36866,15 @@ module.exports = MobileServiceSqliteStore;
 
 var browserExports = _dereq_('../web');
 
-// Add each export individually to module.exports instead of 
-// simply returning browserExports to work around a limitation / bug
-// in browserify's cyclic dependency handling 
+// Copy the browser exports into the exports object for Cordova, instead of module.exports = browserExports.
+// This way we can add more exports to module.exports (in the future) without having to worry about 
+// having an unintended side effect on the browser exports. 
 for (var i in browserExports) {
     exports[i] = browserExports[i];
 }
 
-exports.sdkExports = _dereq_('./sdkExports');
 
-},{"../web":179,"./sdkExports":173}],173:[function(_dereq_,module,exports){
+},{"../web":180}],173:[function(_dereq_,module,exports){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
@@ -37213,7 +37212,7 @@ exports.serializeValue = serializeValue;
 exports.deserialize = deserialize;
 exports.getSqliteType = getSqliteType;
 
-},{".":172,"../../Utilities/Extensions":184,"../../Utilities/Validate":187,"../../sync/ColumnType":192,"./storeHelper":175,"./typeConverter":176,"verror":162}],175:[function(_dereq_,module,exports){
+},{".":172,"../../Utilities/Extensions":185,"../../Utilities/Validate":188,"../../sync/ColumnType":193,"./storeHelper":175,"./typeConverter":176,"verror":162}],175:[function(_dereq_,module,exports){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
@@ -37355,7 +37354,7 @@ module.exports = {
     validateTableDefinition: validateTableDefinition
 };
 
-},{"../../Utilities/Validate":187,"../../constants":189}],176:[function(_dereq_,module,exports){
+},{"../../Utilities/Validate":188,"../../constants":190}],176:[function(_dereq_,module,exports){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
@@ -37496,7 +37495,7 @@ exports.convertToArray = function (value) {
     throw new verror.VError(error, Platform.getResourceString('sqliteSerializer_UnsupportedTypeConversion'), JSON.stringify(value), typeof value, 'Array');    
 };
 
-},{"../../Utilities/Extensions":184,"../../Utilities/Validate":187,"verror":162}],177:[function(_dereq_,module,exports){
+},{"../../Utilities/Extensions":185,"../../Utilities/Validate":188,"verror":162}],177:[function(_dereq_,module,exports){
 (function (global){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
@@ -37536,7 +37535,22 @@ if (target === 'Cordova') {
     throw new Error('Unsupported target');
 }
 
-},{"./cordova":172,"./environment":177,"./web":179}],179:[function(_dereq_,module,exports){
+},{"./cordova":172,"./environment":177,"./web":180}],179:[function(_dereq_,module,exports){
+// ----------------------------------------------------------------------------
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// ----------------------------------------------------------------------------
+
+var target = _dereq_('./environment').getTarget();
+
+if (target === 'Cordova') {
+    module.exports = _dereq_('./cordova/sdkExports');
+} else if (target === 'Web') {
+    module.exports = _dereq_('./web/sdkExports');
+} else {
+    throw new Error('Unsupported target');
+}
+
+},{"./cordova/sdkExports":173,"./environment":177,"./web/sdkExports":181}],180:[function(_dereq_,module,exports){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
@@ -37773,8 +37787,6 @@ exports.allowPlatformToMutateOriginal = function (original, updated) {
     return updated;
 };
 
-exports.sdkExports = _dereq_('./sdkExports');
-
 function getBestTransport() {
     // We cache this just because it gets called such a lot
     if (!bestAvailableTransport) {
@@ -37798,7 +37810,7 @@ function getBestProvider(providers) {
 
     throw new Error("Unsupported browser - no suitable providers are available.");
 }
-},{"../../../../package.json":164,"../../LoginUis/BrowserPopup":165,"../../LoginUis/CordovaPopup":166,"../../LoginUis/WebAuthBroker":167,"../../Transports/DirectAjaxTransport":182,"../../Transports/IframeTransport":183,"../../Utilities/Extensions":184,"../../Utilities/Promises":186,"../../Utilities/Validate":187,"../../resources.json":191,"../environment":177,"./sdkExports":180}],180:[function(_dereq_,module,exports){
+},{"../../../../package.json":164,"../../LoginUis/BrowserPopup":165,"../../LoginUis/CordovaPopup":166,"../../LoginUis/WebAuthBroker":167,"../../Transports/DirectAjaxTransport":183,"../../Transports/IframeTransport":184,"../../Utilities/Extensions":185,"../../Utilities/Promises":187,"../../Utilities/Validate":188,"../../resources.json":192,"../environment":177}],181:[function(_dereq_,module,exports){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
@@ -37808,7 +37820,7 @@ module.exports = {
     // None as of now.
 };
 
-},{}],181:[function(_dereq_,module,exports){
+},{}],182:[function(_dereq_,module,exports){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
@@ -37915,7 +37927,7 @@ function stringifyTemplateBodies(templates) {
     }
     return result;
 }
-},{"../Platform":178,"../Utilities/Extensions":184,"../Utilities/Validate":187,"../constants":189}],182:[function(_dereq_,module,exports){
+},{"../Platform":178,"../Utilities/Extensions":185,"../Utilities/Validate":188,"../constants":190}],183:[function(_dereq_,module,exports){
 (function (global){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
@@ -37970,7 +37982,7 @@ exports.performRequest = function (request, callback) {
     xhr.send(request.data);
 };
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],183:[function(_dereq_,module,exports){
+},{}],184:[function(_dereq_,module,exports){
 (function (global){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
@@ -38077,7 +38089,7 @@ function whenBridgeLoaded(originRoot, callback) {
 
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../Utilities/PostMessageExchange":185,"../Utilities/Promises":186}],184:[function(_dereq_,module,exports){
+},{"../Utilities/PostMessageExchange":186,"../Utilities/Promises":187}],185:[function(_dereq_,module,exports){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
@@ -38657,17 +38669,14 @@ exports.createError = function (exceptionOrMessage, request) {
     /// </param>
     /// <returns>An object with error details</returns>
 
-    // Create an error object to return
-    var error = { message: Platform.getResourceString("Extensions_DefaultErrorMessage") };
-    error.toString = function () {
-        return error.message;
-    };
-
+    var error;
     if (request) {
+        var message = Platform.getResourceString("Extensions_DefaultErrorMessage");
+
         error.request = request;
         if (request.status === 0) {
             // Provide a more helpful message for connection failures
-            error.message = Platform.getResourceString("Extensions_ConnectionFailureMessage");
+            message = Platform.getResourceString("Extensions_ConnectionFailureMessage");
         } else {
             // Try to pull out an error message from the response before
             // defaulting to the status
@@ -38682,9 +38691,9 @@ exports.createError = function (exceptionOrMessage, request) {
             try {
                 var response = JSON.parse(request.responseText);
                 if (typeof response === 'string') {
-                    error.message = response;
+                    message = response;
                 } else {
-                    error.message =
+                    message =
                         response.error ||
                         response.description ||
                         request.statusText ||
@@ -38692,26 +38701,30 @@ exports.createError = function (exceptionOrMessage, request) {
                 }
             } catch (ex) {
                 if (isText) {
-                    error.message = request.responseText;
+                    message = request.responseText;
                 } else {
-                    error.message =
+                    message =
                         request.statusText ||
                         Platform.getResourceString("Extensions_DefaultErrorMessage");
                 }
             }
         }
+
+        error = new Error(message);
     } else if (_.isString(exceptionOrMessage) && !_.isNullOrEmpty(exceptionOrMessage)) {
-        // If it's a string, just use that as the message
-        error.message = exceptionOrMessage;
+        error = new Error(exceptionOrMessage);
+    } else if (exceptionOrMessage instanceof Error) { // If exceptionOrMessage is an Error object, use it as-is
+        error = exceptionOrMessage; 
     } else if (!_.isNull(exceptionOrMessage)) {
         // Otherwise we'll use the object as an exception and leave the
         // default error message
+        error = new Error(Platform.getResourceString("Extensions_DefaultErrorMessage"));
         error.exception = exceptionOrMessage;
     }
 
     return error;
 };
-},{"../Platform":178,"./Validate":187}],185:[function(_dereq_,module,exports){
+},{"../Platform":178,"./Validate":188}],186:[function(_dereq_,module,exports){
 (function (global){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
@@ -38847,7 +38860,7 @@ function parseUrl(url) {
 exports.instance = new PostMessageExchange();
 exports.getOriginRoot = getOriginRoot;
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./Promises":186}],186:[function(_dereq_,module,exports){
+},{"./Promises":187}],187:[function(_dereq_,module,exports){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
@@ -38969,7 +38982,7 @@ exports.getOriginRoot = getOriginRoot;
 
     exports.Promise = Promise;
 })(exports);
-},{}],187:[function(_dereq_,module,exports){
+},{}],188:[function(_dereq_,module,exports){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
@@ -39029,7 +39042,7 @@ exports.isValidId = function (value, name) {
     /// </param>
 
     if (!_.isValidId(value)) {
-        throw new Error('Invalid ID: ' + (name || 'id'));
+        throw new Error((name || 'id') + ' "' + value + '" is not valid.');
     }
 };
 
@@ -39231,7 +39244,7 @@ exports.length = function (value, length, name) {
     }
 };
 
-},{"../Platform":178,"./Extensions":184}],188:[function(_dereq_,module,exports){
+},{"../Platform":178,"./Extensions":185}],189:[function(_dereq_,module,exports){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
@@ -39305,7 +39318,7 @@ module.exports = function () {
     }
 };
 
-},{"../Platform":178,"./Validate":187}],189:[function(_dereq_,module,exports){
+},{"../Platform":178,"./Validate":188}],190:[function(_dereq_,module,exports){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
@@ -39339,7 +39352,7 @@ module.exports = {
     }
 };
 
-},{}],190:[function(_dereq_,module,exports){
+},{}],191:[function(_dereq_,module,exports){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
@@ -39386,7 +39399,7 @@ var api = { // Modules that need to be exposed outside the SDK for all targets
 };
 
 // Target (i.e. Cordova / Browser / etc) specific definitions that need to be exposed outside the SDK
-var targetExports = _dereq_('./Platform').sdkExports;
+var targetExports = _dereq_('./Platform/sdkExports');
 
 // Export shared as well as target specific APIs
 for (var i in targetExports) {
@@ -39406,8 +39419,8 @@ for (var i in targetExports) {
 module.exports = api;
 
 
-},{"./MobileServiceClient":168,"./MobileServiceLogin":169,"./MobileServiceTable":170,"./Platform":178,"./Utilities/Extensions":184,"./sync/MobileServiceSyncTable":194,"azure-query-js":33}],191:[function(_dereq_,module,exports){
-module.exports=﻿{
+},{"./MobileServiceClient":168,"./MobileServiceLogin":169,"./MobileServiceTable":170,"./Platform/sdkExports":179,"./Utilities/Extensions":185,"./sync/MobileServiceSyncTable":195,"azure-query-js":33}],192:[function(_dereq_,module,exports){
+module.exports={
     "TypeCheckError"                                        : "'{0}' is expected to be a value of type {1}, not {2}.",
     "Validate_NotNullError"                                 : "{0} cannot be null.",
     "Validate_NotNullOrEmptyError"                          : "{0} cannot be null or empty.",
@@ -39430,7 +39443,7 @@ module.exports=﻿{
     "sqliteSerializer_UnsupportedColumnType"                : "Column type '{0}' is not supported",
     "sqliteSerializer_UnsupportedTypeConversion"            : "Converting value {0} of type {1} to type {2} is not supported"
 }
-},{}],192:[function(_dereq_,module,exports){
+},{}],193:[function(_dereq_,module,exports){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
@@ -39455,7 +39468,7 @@ module.exports = {
 
 //TODO: Numeric / Number data type
 
-},{}],193:[function(_dereq_,module,exports){
+},{}],194:[function(_dereq_,module,exports){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
@@ -39828,7 +39841,7 @@ function MobileServiceSyncContext(client) {
 
 module.exports = MobileServiceSyncContext;
 
-},{"../Platform":178,"../Utilities/Extensions":184,"../Utilities/Validate":187,"../Utilities/taskRunner":188,"./operations":195,"./pull":196,"./purge":197,"./push":198,"node-uuid":119}],194:[function(_dereq_,module,exports){
+},{"../Platform":178,"../Utilities/Extensions":185,"../Utilities/Validate":188,"../Utilities/taskRunner":189,"./operations":196,"./pull":197,"./purge":198,"./push":199,"node-uuid":119}],195:[function(_dereq_,module,exports){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
@@ -39991,7 +40004,7 @@ tableHelper.defineQueryOperators(MobileServiceSyncTable);
 
 exports.MobileServiceSyncTable = MobileServiceSyncTable;
 
-},{"../Platform":178,"../Utilities/Extensions":184,"../Utilities/Validate":187,"../tableHelper":200,"azure-query-js":33}],195:[function(_dereq_,module,exports){
+},{"../Platform":178,"../Utilities/Extensions":185,"../Utilities/Validate":188,"../tableHelper":201,"azure-query-js":33}],196:[function(_dereq_,module,exports){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
@@ -40412,7 +40425,7 @@ module.exports = {
     createOperationTableManager: createOperationTableManager
 };
 
-},{"../Platform":178,"../Utilities/Extensions":184,"../Utilities/Validate":187,"../Utilities/taskRunner":188,"../constants":189,"./ColumnType":192,"azure-query-js":33}],196:[function(_dereq_,module,exports){
+},{"../Platform":178,"../Utilities/Extensions":185,"../Utilities/Validate":188,"../Utilities/taskRunner":189,"../constants":190,"./ColumnType":193,"azure-query-js":33}],197:[function(_dereq_,module,exports){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
@@ -40730,7 +40743,7 @@ function createPullManager(client, store, storeTaskRunner, operationTableManager
 
 exports.createPullManager = createPullManager;
 
-},{"../MobileServiceTable":170,"../Platform":178,"../Utilities/Extensions":184,"../Utilities/Validate":187,"../Utilities/taskRunner":188,"../constants":189,"azure-query-js":33}],197:[function(_dereq_,module,exports){
+},{"../MobileServiceTable":170,"../Platform":178,"../Utilities/Extensions":185,"../Utilities/Validate":188,"../Utilities/taskRunner":189,"../constants":190,"azure-query-js":33}],198:[function(_dereq_,module,exports){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
@@ -40819,7 +40832,7 @@ function createPurgeManager(store, storeTaskRunner) {
 
 exports.createPurgeManager = createPurgeManager;
 
-},{"../MobileServiceTable":170,"../Platform":178,"../Utilities/Extensions":184,"../Utilities/Validate":187,"../Utilities/taskRunner":188,"../constants":189,"azure-query-js":33}],198:[function(_dereq_,module,exports){
+},{"../MobileServiceTable":170,"../Platform":178,"../Utilities/Extensions":185,"../Utilities/Validate":188,"../Utilities/taskRunner":189,"../constants":190,"azure-query-js":33}],199:[function(_dereq_,module,exports){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
@@ -41019,7 +41032,7 @@ function createPushManager(client, store, storeTaskRunner, operationTableManager
 
 exports.createPushManager = createPushManager;
 
-},{"../MobileServiceTable":170,"../Platform":178,"../Utilities/Extensions":184,"../Utilities/Validate":187,"../Utilities/taskRunner":188,"../constants":189,"./pushError":199,"azure-query-js":33,"verror":162}],199:[function(_dereq_,module,exports){
+},{"../MobileServiceTable":170,"../Platform":178,"../Utilities/Extensions":185,"../Utilities/Validate":188,"../Utilities/taskRunner":189,"../constants":190,"./pushError":200,"azure-query-js":33,"verror":162}],200:[function(_dereq_,module,exports){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
@@ -41471,7 +41484,7 @@ function handlePushError(pushError, pushHandler) {
 exports.createPushError = createPushError;
 exports.handlePushError = handlePushError;
 
-},{"../Platform":178,"../Utilities/Extensions":184,"../constants":189}],200:[function(_dereq_,module,exports){
+},{"../Platform":178,"../Utilities/Extensions":185,"../constants":190}],201:[function(_dereq_,module,exports){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
@@ -41515,5 +41528,5 @@ function defineQueryOperators(table) {
 
 exports.defineQueryOperators = defineQueryOperators;
 
-},{"./Platform":178,"azure-query-js":33}]},{},[190])(190)
+},{"./Platform":178,"azure-query-js":33}]},{},[191])(191)
 });
