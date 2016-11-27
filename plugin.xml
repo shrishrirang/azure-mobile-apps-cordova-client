@@ -13,8 +13,8 @@
     <repo>https://github.com/azure/azure-mobile-apps-cordova-client</repo>
     <issue>https://github.com/azure/azure-mobile-apps-js-client/issues</issue>
 
-    <dependency id="cordova-plugin-inappbrowser"/>
-    <dependency id="cordova-sqlite-storage"/>
+    <dependency id="cordova-plugin-inappbrowser@1.5.0"/>
+    <dependency id="cordova-sqlite-storage@1.4.8"/>
 
     <platform name="windows8">
         <js-module src="www/MobileServices.Cordova.Ext.js" name="AzureMobileServices.Ext">
