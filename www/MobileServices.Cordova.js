@@ -1,6 +1,6 @@
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved
-// azure-mobile-apps-client - v2.0.0-rc1
+// azure-mobile-apps-client - v2.0.0-41127.203517
 // ----------------------------------------------------------------------------
 
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.WindowsAzure = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
@@ -20660,21 +20660,14 @@ utils.intFromLE = intFromLE;
 module.exports={
   "_args": [
     [
-      {
-        "raw": "elliptic@^6.0.0",
-        "scope": null,
-        "escapedName": "elliptic",
-        "name": "elliptic",
-        "rawSpec": "^6.0.0",
-        "spec": ">=6.0.0 <7.0.0",
-        "type": "range"
-      },
-      "d:\\repos\\shrishrirang\\azure-mobile-apps-js-client\\node_modules\\browserify-sign"
+      "elliptic@^6.0.0",
+      "C:\\Jenkins\\workspace\\JavascriptClientBuild\\javascript\\node_modules\\browserify-sign"
     ]
   ],
   "_from": "elliptic@>=6.0.0 <7.0.0",
   "_id": "elliptic@6.3.2",
   "_inCache": true,
+  "_installable": true,
   "_location": "/elliptic",
   "_nodeVersion": "6.3.0",
   "_npmOperationalInternal": {
@@ -20682,17 +20675,16 @@ module.exports={
     "tmp": "tmp/elliptic-6.3.2.tgz_1473938837205_0.3108903462998569"
   },
   "_npmUser": {
-    "name": "indutny",
-    "email": "fedor@indutny.com"
+    "email": "fedor@indutny.com",
+    "name": "indutny"
   },
   "_npmVersion": "3.10.3",
   "_phantomChildren": {},
   "_requested": {
-    "raw": "elliptic@^6.0.0",
-    "scope": null,
-    "escapedName": "elliptic",
     "name": "elliptic",
+    "raw": "elliptic@^6.0.0",
     "rawSpec": "^6.0.0",
+    "scope": null,
     "spec": ">=6.0.0 <7.0.0",
     "type": "range"
   },
@@ -20704,10 +20696,10 @@ module.exports={
   "_shasum": "e4c81e0829cf0a65ab70e998b8232723b5c1bc48",
   "_shrinkwrap": null,
   "_spec": "elliptic@^6.0.0",
-  "_where": "d:\\repos\\shrishrirang\\azure-mobile-apps-js-client\\node_modules\\browserify-sign",
+  "_where": "C:\\Jenkins\\workspace\\JavascriptClientBuild\\javascript\\node_modules\\browserify-sign",
   "author": {
-    "name": "Fedor Indutny",
-    "email": "fedor@indutny.com"
+    "email": "fedor@indutny.com",
+    "name": "Fedor Indutny"
   },
   "bugs": {
     "url": "https://github.com/indutny/elliptic/issues"
@@ -20745,10 +20737,10 @@ module.exports={
   "gitHead": "cbace4683a4a548dc0306ef36756151a20299cd5",
   "homepage": "https://github.com/indutny/elliptic",
   "keywords": [
+    "Cryptography",
     "EC",
     "Elliptic",
-    "curve",
-    "Cryptography"
+    "curve"
   ],
   "license": "MIT",
   "main": "lib/elliptic.js",
@@ -34146,7 +34138,7 @@ exports.createContext = Script.createContext = function (context) {
 
 },{"indexof":114}],164:[function(_dereq_,module,exports){
 module.exports={
-  "version": "2.0.0-rc1"
+  "version": "2.0.0-41127.203517"
 }
 },{}],165:[function(_dereq_,module,exports){
 // ----------------------------------------------------------------------------
@@ -39432,15 +39424,15 @@ var api = { // Modules that need to be exposed outside the SDK for all targets
      * @type {MobileServiceClient} 
      */
     MobileServiceClient: _dereq_('./MobileServiceClient'),
-    MobileServiceLogin: _dereq_('./MobileServiceLogin'),
-    MobileServiceSyncTable: _dereq_('./sync/MobileServiceSyncTable'),
-    MobileServiceTable: _dereq_('./MobileServiceTable'),
 
     /** 
      * @type {QueryJs}
      */
     Query: _dereq_('azure-query-js').Query
 };
+
+// Define for test purpose only
+api._MobileServiceTable = _dereq_('./MobileServiceTable');
 
 // Target (i.e. Cordova / Browser / etc) specific definitions that need to be exposed outside the SDK
 var targetExports = _dereq_('./Platform/sdkExports');
@@ -39463,7 +39455,7 @@ for (var i in targetExports) {
 module.exports = api;
 
 
-},{"./MobileServiceClient":168,"./MobileServiceLogin":169,"./MobileServiceTable":170,"./Platform/sdkExports":179,"./Utilities/Extensions":185,"./sync/MobileServiceSyncTable":195,"azure-query-js":33}],192:[function(_dereq_,module,exports){
+},{"./MobileServiceClient":168,"./MobileServiceTable":170,"./Platform/sdkExports":179,"./Utilities/Extensions":185,"azure-query-js":33}],192:[function(_dereq_,module,exports){
 module.exports={
     "TypeCheckError"                                        : "'{0}' is expected to be a value of type {1}, not {2}.",
     "Validate_NotNullError"                                 : "{0} cannot be null.",
