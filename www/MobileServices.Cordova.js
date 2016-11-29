@@ -1,6 +1,6 @@
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved
-// azure-mobile-apps-client - v2.0.0-41127.203517
+// azure-mobile-apps-client - v2.0.0-41128.193844
 // ----------------------------------------------------------------------------
 
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.WindowsAzure = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
@@ -34138,7 +34138,7 @@ exports.createContext = Script.createContext = function (context) {
 
 },{"indexof":114}],164:[function(_dereq_,module,exports){
 module.exports={
-  "version": "2.0.0-41127.203517"
+  "version": "2.0.0-41128.193844"
 }
 },{}],165:[function(_dereq_,module,exports){
 // ----------------------------------------------------------------------------
@@ -34317,7 +34317,7 @@ exports.login = function (startUri, endUri, callback) {
                         loginWindow.close();
                     }, 500);
                     var result = parseOAuthResultFromDoneUrl(evt.url);
-                    callback(new Error(result.error), result.oAuthToken);
+                    callback(result.error, result.oAuthToken);
                 }
             };
 
@@ -34367,7 +34367,7 @@ function parseOAuthResultFromDoneUrl(url) {
         errorMessage = extractMessageFromUrl(url, "#error=");
     return {
         oAuthToken: successMessage ? JSON.parse(successMessage) : null,
-        error: errorMessage
+        error: errorMessage ? new Error(errorMessage) : null
     };
 }
 
@@ -39431,9 +39431,6 @@ var api = { // Modules that need to be exposed outside the SDK for all targets
     Query: _dereq_('azure-query-js').Query
 };
 
-// Define for test purpose only
-api._MobileServiceTable = _dereq_('./MobileServiceTable');
-
 // Target (i.e. Cordova / Browser / etc) specific definitions that need to be exposed outside the SDK
 var targetExports = _dereq_('./Platform/sdkExports');
 
@@ -39455,7 +39452,7 @@ for (var i in targetExports) {
 module.exports = api;
 
 
-},{"./MobileServiceClient":168,"./MobileServiceTable":170,"./Platform/sdkExports":179,"./Utilities/Extensions":185,"azure-query-js":33}],192:[function(_dereq_,module,exports){
+},{"./MobileServiceClient":168,"./Platform/sdkExports":179,"./Utilities/Extensions":185,"azure-query-js":33}],192:[function(_dereq_,module,exports){
 module.exports={
     "TypeCheckError"                                        : "'{0}' is expected to be a value of type {1}, not {2}.",
     "Validate_NotNullError"                                 : "{0} cannot be null.",
