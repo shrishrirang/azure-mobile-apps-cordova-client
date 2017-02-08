@@ -1,0 +1,6 @@
+framework module AzureEasyAuth {
+  umbrella header "AzureEasyAuth.h"
+
+  export *
+  module * { export * }
+}

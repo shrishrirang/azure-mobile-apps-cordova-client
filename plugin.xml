@@ -38,7 +38,7 @@
         <js-module src="www/MobileServices.Cordova.Ext.js" name="AzureMobileServices.Ext">
             <runs />
         </js-module>
-        <js-module src="www/MobileServices.Cordova.js" name="AzureMobileServices">
+        <js-module src="www/index.js" name="AzureMobileServices">
             <clobbers target="WindowsAzure" />
         </js-module>
     </platform>
@@ -48,8 +48,12 @@
             <runs />
         </js-module>
         <js-module src="www/MobileServices.Cordova.js" name="AzureMobileServices">
+        </js-module>
+        <js-module src="www/index.js" name="abc">
             <clobbers target="WindowsAzure" />
         </js-module>
+		<source-file src="src/ios/easyauth.m" />
+        <framework src="src/ios/AzureEasyAuth.framework" custom="true" />
     </platform>
 
     <platform name="android">
