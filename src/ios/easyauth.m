@@ -1,10 +1,9 @@
 //FIXME: license
 
 #import <Cordova/CDV.h>
-@import AzureEasyAuth;
+#import <AzureEasyAuth/AzureEasyAuth.h>
 
 @interface EasyAuth : CDVPlugin {
-
 }
 
 @property (strong, nonatomic) MSLoginSafariViewController *loginController;
@@ -13,9 +12,7 @@
 
 @end
 
-@implementation easyauth
-
-//CDVInvokedUrlCommand *_command;
+@implementation EasyAuth
 
 - (void)login:(CDVInvokedUrlCommand*)command {
     NSString* provider = [command.arguments objectAtIndex:0];
@@ -23,16 +20,18 @@
     NSString* loginHost = [command.arguments objectAtIndex:2];
     NSString* loginUriPrefix = [command.arguments objectAtIndex:3];
 
-    //NSString *easyAuthAppId = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"EASYAUTH_APPID"];
+    NSString *easyAuthAppId = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"EASYAUTH_APPID"];
 
-    [self.loginController loginWithProvider:provider urlScheme:@"zzz" parameters:parameters controller:self.viewController animated:NO completion:^(MSUser * _Nullable user, NSError * _Nullable error) {
+    [self.loginController loginWithProvider:provider urlScheme:easyAuthAppId parameters:parameters controller:self.viewController animated:NO completion:^(MSUser * _Nullable user, NSError * _Nullable error) {
         if (user) {
-            NSLog(@"User: %@", user.userId);
-            CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:user.userId];
+            NSDictionary *userDict = @{
+                @"user": user.userId,
+                @"authenticationToken": user.mobileServiceAuthenticationToken
+            };
+            CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:userDict];
             [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
             return;
         } else {
-            NSLog(@"Error: %@", [error description]);
             CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString: [error description]];
             [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
             return;
@@ -45,7 +44,7 @@
 }
 
 - (void)onReset {
-    // FIXME
+    // FIXME - implement overrides
 }
 
 /* NOTE: calls into JavaScript must not call or trigger any blocking UI, like alerts */
@@ -58,7 +57,7 @@
     
     [self.loginController resumeWithURL:url];
 
-    // TODO: Error
+    // FIXME: Error
 }
 
 @end
