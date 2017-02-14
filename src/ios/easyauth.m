@@ -25,7 +25,9 @@
     [self.loginController loginWithProvider:provider urlScheme:easyAuthAppId parameters:parameters controller:self.viewController animated:NO completion:^(MSUser * _Nullable user, NSError * _Nullable error) {
         if (user) {
             NSDictionary *userDict = @{
-                @"user": user.userId,
+                @"user": @{
+                    @"userId": user.userId
+                },
                 @"authenticationToken": user.mobileServiceAuthenticationToken
             };
             CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:userDict];
