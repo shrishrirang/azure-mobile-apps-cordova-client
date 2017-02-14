@@ -19,7 +19,7 @@ function loginWithOptions(options, callback) {
     exec(success, error, "EasyAuth", "login", [options.provider, options.queryParameters, options.loginHost, options.loginUriPrefix]);
 }
 
-var WindowsAzure = require('cordova-plugin-ms-azure-mobile-apps.AzureMobileServices');
+var WindowsAzure = require('cordova-plugin-ms-azure-mobile-apps.cordova-bundle');
 
 WindowsAzure.configure({
     login: {
