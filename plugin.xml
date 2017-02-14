@@ -16,37 +16,28 @@
     <dependency id="cordova-sqlite-storage@1.4.8"/>
 
     <platform name="windows8">
-        <js-module src="www/MobileServices.Cordova.Ext.js" name="AzureMobileServices.Ext" >
-            <runs />
-        </js-module>
         <js-module src="www/MobileServices.Cordova.js" name="cordova-bundle">
             <runs />
         </js-module>
-        <js-module src="www/index.js" name="AzureMobileServices" >
+        <js-module src="www/index.js" name="AzureMobileServices">
             <clobbers target="WindowsAzure" />
         </js-module>
     </platform>
 
     <platform name="windows">
-        <js-module src="www/MobileServices.Cordova.Ext.js" name="AzureMobileServices.Ext" >
-            <runs />
-        </js-module>
         <js-module src="www/MobileServices.Cordova.js" name="cordova-bundle">
             <runs />
         </js-module>
-        <js-module src="www/index.js" name="AzureMobileServices" >
+        <js-module src="www/index.js" name="AzureMobileServices">
             <clobbers target="WindowsAzure" />
         </js-module>
     </platform>
 
     <platform name="wp8">
-        <js-module src="www/MobileServices.Cordova.Ext.js" name="AzureMobileServices.Ext" >
-            <runs />
-        </js-module>
         <js-module src="www/MobileServices.Cordova.js" name="cordova-bundle">
             <runs />
         </js-module>
-        <js-module src="www/index.js" name="AzureMobileServices" >
+        <js-module src="www/index.js" name="AzureMobileServices">
             <clobbers target="WindowsAzure" />
         </js-module>
     </platform>
@@ -75,13 +66,10 @@
                 </dict>
             </array>
         </config-file>
-        <js-module src="www/MobileServices.Cordova.Ext.js" name="AzureMobileServices.Ext" >
-            <runs />
-        </js-module>
         <js-module src="www/MobileServices.Cordova.js" name="cordova-bundle">
             <runs />
         </js-module>
-        <js-module src="www/index.js" name="AzureMobileServices" >
+        <js-module src="www/index.js" name="AzureMobileServices">
             <clobbers target="WindowsAzure" />
         </js-module>
         <source-file src="src/ios/easyauth.m" />
@@ -89,25 +77,19 @@
     </platform>
 
     <platform name="android">
-        <js-module src="www/MobileServices.Cordova.Ext.js" name="AzureMobileServices.Ext" >
-            <runs />
-        </js-module>
         <js-module src="www/MobileServices.Cordova.js" name="cordova-bundle">
             <runs />
         </js-module>
-        <js-module src="www/index.js" name="AzureMobileServices" >
+        <js-module src="www/index.js" name="AzureMobileServices">
             <clobbers target="WindowsAzure" />
         </js-module>
     </platform>
 
     <platform name="browser">
-        <js-module src="www/MobileServices.Cordova.Ext.js" name="AzureMobileServices.Ext" >
-            <runs />
-        </js-module>
         <js-module src="www/MobileServices.Cordova.js" name="cordova-bundle">
             <runs />
         </js-module>
-        <js-module src="www/index.js" name="AzureMobileServices" >
+        <js-module src="www/index.js" name="AzureMobileServices">
             <clobbers target="WindowsAzure" />
         </js-module>
     </platform>
