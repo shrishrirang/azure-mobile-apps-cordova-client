@@ -31,8 +31,8 @@ static const NSString * const appIdKey = @"com.microsoft.azure.easyauth.appid";
         return;
     }
 
-    // FIXME: remove hardcoding
-    self.loginController = [[MSLoginSafariViewController alloc] initWithBackendUrl:@"https://shrirs-demo.azurewebsites.net"];
+    // TODO: Use the specified loginUriPrefix once https://github.com/Azure/azure-mobile-apps-ios-client/issues/132 is fixed.
+    self.loginController = [[MSLoginSafariViewController alloc] initWithBackendUrl:loginHost];
 
     [self.loginController loginWithProvider:provider urlScheme:easyAuthAppId parameters:parameters controller:self.viewController animated:NO completion:^(MSUser * _Nullable user, NSError * _Nullable error) {
         if (user) {
