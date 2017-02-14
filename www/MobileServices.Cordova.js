@@ -34109,7 +34109,7 @@ exports.supportsCurrentRuntime = function () {
     return true;
 };
 
-exports.login = function (startUri, endUri, callback) {
+exports.login = function (options, callback) {
     /// <summary>
     /// Displays the login UI and calls back on completion
     /// </summary>
@@ -34119,15 +34119,15 @@ exports.login = function (startUri, endUri, callback) {
     // is validated against whitelist on the server; we are only supplying this
     // origin to indicate *which* of the whitelisted origins to use).
     var completionOrigin = PostMessageExchange.getOriginRoot(window.location.href),
-        runtimeOrigin = PostMessageExchange.getOriginRoot(startUri),
+        runtimeOrigin = PostMessageExchange.getOriginRoot(options.startUri),
         // IE does not support popup->opener postMessage calls, so we have to
         // route the message via an iframe
         useIntermediateIframe = window.navigator.userAgent.indexOf("MSIE") >= 0 || window.navigator.userAgent.indexOf("Trident") >= 0,
         intermediateIframe = useIntermediateIframe && createIntermediateIframeForLogin(runtimeOrigin, completionOrigin),
         completionType = useIntermediateIframe ? "iframe" : "postMessage";
 
-    startUri += startUri.indexOf('?') == -1 ? '?' : '&';
-    startUri += "completion_type=" + completionType + "&completion_origin=" + encodeURIComponent(completionOrigin);
+    options.startUri += options.startUri.indexOf('?') == -1 ? '?' : '&';
+    options.startUri += "completion_type=" + completionType + "&completion_origin=" + encodeURIComponent(completionOrigin);
 
     // Browsers don't allow postMessage to a file:// URL (except by setting origin to "*", which is unacceptable)
     // so abort the process early with an explanation in that case.
@@ -34137,7 +34137,7 @@ exports.login = function (startUri, endUri, callback) {
         return;
     }
 
-    var loginWindow = window.open(startUri, "_blank", "location=no,resizable=yes"),
+    var loginWindow = window.open(options.startUri, "_blank", "location=no,resizable=yes"),
         complete = function(errorValue, oauthValue) {
             // Clean up event handlers, windows, frames, ...
             window.clearInterval(checkForWindowClosedInterval);
@@ -34215,12 +34215,12 @@ function createIntermediateIframeForLogin(runtimeOrigin, completionOrigin) {
     document.body.appendChild(frame);
     return frame;
 }
-},{"../Utilities/PostMessageExchange":186}],165:[function(_dereq_,module,exports){
+},{"../Utilities/PostMessageExchange":185}],165:[function(_dereq_,module,exports){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
 
-var definitions = _dereq_('../Platform/definitions');
+var config = _dereq_('../config');
 
 var requiredCordovaVersion = { major: 3, minor: 0 };
 
@@ -34234,70 +34234,6 @@ exports.supportsCurrentRuntime = function () {
     return !!currentCordovaVersion() && !isRunUnderRippleEmulator();
 };
 
-// Optional callback accepting (error, user) parameters.
-exports.login = function (options, callback) {
-    var customDefinitions = definitions.get();
-
-    if (customDefinitions && customDefinitions.login && customDefinitions.loginWithOptions) {
-        return customDefinitions.loginWithOptions(options, callback);
-    }
-
-    callback(new Error('Cordova login implementation missing!'));
-};
-
-exports.login2 = function (startUri, endUri, callback) {
-    /// <summary>
-    /// Displays the login UI and calls back on completion
-    /// </summary>
-
-    // Ensure it's a sufficiently new version of Cordova, and if not fail synchronously so that
-    // the error message will show up in the browser console.
-    var foundCordovaVersion = currentCordovaVersion(),
-        message;
-
-    if (!isSupportedCordovaVersion(foundCordovaVersion)) {
-        message = "Not a supported version of Cordova. Detected: " + foundCordovaVersion +
-                    ". Required: " + requiredCordovaVersion.major + "." + requiredCordovaVersion.minor;
-        throw new Error(message);
-    }
-    if (!hasInAppBrowser) {
-        message = 'A required plugin: "org.apache.cordova.inappbrowser" was not detected.';
-        throw new Error(message);
-    }
-
-    // Initially we show a page with a spinner. This stays on screen until the login form has loaded.
-    var redirectionScript = "<script>location.href = unescape('" + window.escape(startUri) + "')</script>",
-        startPage = "data:text/html," + encodeURIComponent(getSpinnerMarkup() + redirectionScript);
-
-    // iOS inAppBrowser issue requires this wrapping
-    setTimeout(function () {
-        var loginWindow = window.open(startPage, "_blank", "location=no,hardwareback=no"),
-            flowHasFinished = false,
-            loadEventHandler = function (evt) {
-                if (!flowHasFinished && evt.url.indexOf(endUri) === 0) {
-                    flowHasFinished = true;
-                    setTimeout(function () {
-                        loginWindow.close();
-                    }, 500);
-                    var result = parseOAuthResultFromDoneUrl(evt.url);
-                    callback(result.error, result.oAuthToken);
-                }
-            };
-
-        // Ideally we'd just use loadstart because it happens earlier, but it randomly skips
-        // requests on iOS, so we have to listen for loadstop as well (which is reliable).
-        loginWindow.addEventListener('loadstart', loadEventHandler);
-        loginWindow.addEventListener('loadstop', loadEventHandler);
-
-        loginWindow.addEventListener('exit', function (evt) {
-            if (!flowHasFinished) {
-                flowHasFinished = true;
-                callback(new Error("UserCancelled"), null);
-            }
-        });
-    }, 500);
-};
-
 function isRunUnderRippleEmulator () {
     // Returns true when application runs under Ripple emulator 
     return window.parent && !!window.parent.ripple;
@@ -34309,68 +34245,17 @@ function currentCordovaVersion() {
     return window.cordova && window.cordova.version;
 }
 
-function isSupportedCordovaVersion(version) {
-    var versionParts = currentCordovaVersion().match(/^(\d+).(\d+)./);
-    if (versionParts) {
-        var major = Number(versionParts[1]),
-            minor = Number(versionParts[2]),
-            required = requiredCordovaVersion;
-        return (major > required.major) ||
-               (major === required.major && minor >= required.minor);
+// Optional callback accepting (error, user) parameters.
+exports.login = function (options, callback) {
+    var configuration = config.get();
+    if (configuration && configuration.login && configuration.login.loginWithOptions) {
+        return configuration.login.loginWithOptions(options, callback);
     }
-    return false;
-}
 
-function hasInAppBrowser() {
-    return !window.open;
-}
+    callback(new Error('Cordova login implementation not provided!'));
+};
 
-function parseOAuthResultFromDoneUrl(url) {
-    var successMessage = extractMessageFromUrl(url, "#token="),
-        errorMessage = extractMessageFromUrl(url, "#error=");
-    return {
-        oAuthToken: successMessage ? JSON.parse(successMessage) : null,
-        error: errorMessage ? new Error(errorMessage) : null
-    };
-}
-
-function extractMessageFromUrl(url, separator) {
-    var pos = url.indexOf(separator);
-    return pos < 0 ? null : decodeURIComponent(url.substring(pos + separator.length));
-}
-
-function getSpinnerMarkup() {
-    // The default InAppBrowser experience isn't ideal, as it just shows the user a blank white screen
-    // until the login form appears. This might take 10+ seconds during which it looks broken.
-    // Also on iOS it's possible for the InAppBrowser to initially show the results of the *previous*
-    // login flow if the InAppBrowser was dismissed before completion, which is totally undesirable.
-    // To fix both of these problems, we display a simple "spinner" graphic via a data: URL until
-    // the current login screen has loaded. We generate the spinner via CSS rather than referencing
-    // an animated GIF just because this makes the client library smaller overall.
-    var vendorPrefix = "webkitTransform" in document.documentElement.style ? "-webkit-" : "",
-        numSpokes = 12,
-        spokesMarkup = "";
-    for (var i = 0; i < numSpokes; i++) {
-        spokesMarkup += "<div style='-prefix-transform: rotateZ(" + (180 + i * 360 / numSpokes) + "deg);" +
-                                    "-prefix-animation-delay: " + (0.75 * i / numSpokes) + "s;'></div>";
-    }
-    return [
-        "<!DOCTYPE html><html>",
-        "<head><meta name='viewport' content='width=device-width, initial-scale=1, maximum-scale=1'></head>",
-        "<body><div id='spinner'>" + spokesMarkup + "</div>",
-        "<style type='text/css'>",
-        "    #spinner { position: absolute; top: 50%; left: 50%; -prefix-animation: spinner 10s linear infinite; }",
-        "    #spinner > div {",
-        "        background: #333; opacity: 0; position: absolute; top: 11px; left: -2px; width: 4px; height: 21px; border-radius: 2px;",
-        "        -prefix-transform-origin: 50% -11px; -prefix-animation: spinner-spoke 0.75s linear infinite;",
-        "    }",
-        "    @-prefix-keyframes spinner { 0% { -prefix-transform: rotateZ(0deg); } 100% { -prefix-transform: rotateZ(-360deg); } }",
-        "    @-prefix-keyframes spinner-spoke { 0% { opacity: 0; } 5% { opacity: 1; } 70% { opacity: 0; } 100% { opacity: 0; } }",
-        "</style>",
-        "</body></html>"
-    ].join("").replace(/-prefix-/g, vendorPrefix);
-}
-},{"../Platform/definitions":176}],166:[function(_dereq_,module,exports){
+},{"../config":189}],166:[function(_dereq_,module,exports){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
@@ -34386,7 +34271,7 @@ exports.supportsCurrentRuntime = function () {
     return isWebAuthBrokerAvailable();
 };
 
-exports.login = function (startUri, endUri, callback) {
+exports.login = function (options, callback) {
     /// <summary>
     /// Displays the login UI and calls back on completion
     /// </summary>
@@ -34460,24 +34345,24 @@ exports.login = function (startUri, endUri, callback) {
     // be registered with the Microsoft Azure Mobile Service, but it provides a better 
     // experience as HTTP cookies are supported so that users do not have to
     // login in everytime the application is launched.
-    if (endUri) {
-        endUri = new Windows.Foundation.Uri(endUri);
+    if (options.endUri) {
+        options.endUri = new Windows.Foundation.Uri(options.endUri);
     } else {
         var ssoQueryParameter = {},
             redirectUri = windowsWebAuthBroker.getCurrentApplicationCallbackUri().absoluteUri;
 
         ssoQueryParameter[easyAuthRedirectUriKey] = redirectUri;
-        startUri = _.url.combinePathAndQuery(startUri, _.url.getQueryString(ssoQueryParameter));
+        options.startUri = _.url.combinePathAndQuery(options.startUri, _.url.getQueryString(ssoQueryParameter));
     }
     
-    startUri = new Windows.Foundation.Uri(startUri);
+    options.startUri = new Windows.Foundation.Uri(options.startUri);
     
     // If authenticateAndContinue method is available, we should use it instead of authenticateAsync.
     // In the event that it exists, but fails (which is the case with Win 10), we fallback to authenticateAsync.
     var isLoginWindowLaunched;
     try {
         WinJS.Application.addEventListener('activated', webAuthBrokerContinuationCallback, true);
-        windowsWebAuthBroker.authenticateAndContinue(startUri, endUri);
+        windowsWebAuthBroker.authenticateAndContinue(options.startUri, options.endUri);
 
         isLoginWindowLaunched = true;
     } catch (ex) {
@@ -34485,7 +34370,7 @@ exports.login = function (startUri, endUri, callback) {
     }
 
     if (!isLoginWindowLaunched) {
-        windowsWebAuthBroker.authenticateAsync(noneWebAuthOptions, startUri, endUri)
+        windowsWebAuthBroker.authenticateAsync(noneWebAuthOptions, options.startUri, options.endUri)
         .done(webAuthBrokerSuccessCallback, webAuthBrokerErrorCallback);
     }
 };
@@ -34499,7 +34384,7 @@ function isWebAuthBrokerAvailable() {
         window.Windows.Security.Authentication.Web.WebAuthenticationBroker);
 }
 
-},{"../Utilities/Extensions":185}],167:[function(_dereq_,module,exports){
+},{"../Utilities/Extensions":184}],167:[function(_dereq_,module,exports){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
@@ -35058,7 +34943,7 @@ MobileServiceClient._userAgent = Platform.getUserAgent();
 // Define the module exports
 module.exports = MobileServiceClient;
 
-},{"./MobileServiceLogin":168,"./MobileServiceTable":169,"./Platform":178,"./Push/Push":182,"./Utilities/Extensions":185,"./Utilities/Validate":188,"./constants":190,"./sync/MobileServiceSyncContext":194,"./sync/MobileServiceSyncTable":195}],168:[function(_dereq_,module,exports){
+},{"./MobileServiceLogin":168,"./MobileServiceTable":169,"./Platform":177,"./Push/Push":181,"./Utilities/Extensions":184,"./Utilities/Validate":187,"./constants":190,"./sync/MobileServiceSyncContext":194,"./sync/MobileServiceSyncTable":195}],168:[function(_dereq_,module,exports){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
@@ -35473,13 +35358,11 @@ function loginWithLoginControl(login, provider, useSingleSignOn, parameters, cal
     /// The callback to execute when the login completes: callback(error, user).
     /// </param>
 
-    var client = login.getMobileServiceClient();
-    var startUri = _.url.combinePathSegments(
-        client.alternateLoginHost || client.applicationUrl,
-        client.loginUriPrefix || loginUrl,
-        provider);
-
-    var endUri = null,
+    var client = login.getMobileServiceClient(),
+        loginHost = client.alternateLoginHost || client.applicationUrl,
+        loginUriPrefix = client.loginUriPrefix || loginUrl,
+        startUri,
+        endUri,
         queryParameters = {},
         key;
 
@@ -35489,8 +35372,8 @@ function loginWithLoginControl(login, provider, useSingleSignOn, parameters, cal
     }
     queryParameters[sessionModeKey] = sessionModeValueToken;
 
-    var queryString = _.url.getQueryString(queryParams);
-    startUri = _.url.combinePathAndQuery(startUri, queryString);
+    startUri = _.url.combinePathSegments(loginHost, loginUriPrefix, provider);
+    startUri = _.url.combinePathAndQuery(startUri, _.url.getQueryString(queryParameters));
 
     // If not single sign-on, then we need to construct a non-null end uri.
     if (!useSingleSignOn) {
@@ -35504,15 +35387,16 @@ function loginWithLoginControl(login, provider, useSingleSignOn, parameters, cal
 
     // Call the platform to launch the login control, capturing any
     // 'cancel' callback that it returns
-    var platformResult = Platform.login(
-        {
-            loginHost: client.alternateLoginHost || client.applicationUrl,
-            loginUriPrefix: client.loginUriPrefix || loginUrl,
+    var platformResult = Platform.login({
+            provider,
+            loginHost: loginHost,
+            loginUriPrefix: loginUriPrefix,
+            startUri,
+            endUri,
             provider: provider,
             queryParameters: queryParameters,
             useSingleSignOn: useSingleSignOn
-        },
-        function (error, mobileServiceToken) {
+        }, function (error, mobileServiceToken) {
             login._loginState = { inProcess: false, cancelCallback: null };
             onLoginComplete(error, mobileServiceToken, client, callback);
         });
@@ -35525,7 +35409,7 @@ function loginWithLoginControl(login, provider, useSingleSignOn, parameters, cal
 // Define the module exports
 module.exports = MobileServiceLogin;
 
-},{"./Platform":178,"./Utilities/Extensions":185,"./Utilities/Validate":188}],169:[function(_dereq_,module,exports){
+},{"./Platform":177,"./Utilities/Extensions":184,"./Utilities/Validate":187}],169:[function(_dereq_,module,exports){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
@@ -36253,7 +36137,7 @@ function addQueryParametersFeaturesIfApplicable(features, userQueryParameters) {
 // Define the module exports
 module.exports = MobileServiceTable;
 
-},{"./Platform":178,"./Utilities/Extensions":185,"./Utilities/Validate":188,"./constants":190,"./tableHelper":201,"azure-query-js":33}],170:[function(_dereq_,module,exports){
+},{"./Platform":177,"./Utilities/Extensions":184,"./Utilities/Validate":187,"./constants":190,"./tableHelper":201,"azure-query-js":33}],170:[function(_dereq_,module,exports){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
@@ -36856,7 +36740,7 @@ MobileServiceSqliteStore.ColumnType = ColumnType;
 // Define the module exports
 module.exports = MobileServiceSqliteStore;
 
-},{".":171,"../../Utilities/Extensions":185,"../../Utilities/Validate":188,"../../Utilities/taskRunner":189,"../../sync/ColumnType":193,"./sqliteSerializer":173,"./storeHelper":174,"azure-odata-sql":23,"azure-query-js":33}],171:[function(_dereq_,module,exports){
+},{".":171,"../../Utilities/Extensions":184,"../../Utilities/Validate":187,"../../Utilities/taskRunner":188,"../../sync/ColumnType":193,"./sqliteSerializer":173,"./storeHelper":174,"azure-odata-sql":23,"azure-query-js":33}],171:[function(_dereq_,module,exports){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
@@ -36878,7 +36762,7 @@ for (var i in browserExports) {
 }
 
 
-},{"../web":180}],172:[function(_dereq_,module,exports){
+},{"../web":179}],172:[function(_dereq_,module,exports){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
@@ -37216,7 +37100,7 @@ exports.serializeValue = serializeValue;
 exports.deserialize = deserialize;
 exports.getSqliteType = getSqliteType;
 
-},{".":171,"../../Utilities/Extensions":185,"../../Utilities/Validate":188,"../../sync/ColumnType":193,"./storeHelper":174,"./typeConverter":175,"verror":161}],174:[function(_dereq_,module,exports){
+},{".":171,"../../Utilities/Extensions":184,"../../Utilities/Validate":187,"../../sync/ColumnType":193,"./storeHelper":174,"./typeConverter":175,"verror":161}],174:[function(_dereq_,module,exports){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
@@ -37358,7 +37242,7 @@ module.exports = {
     validateTableDefinition: validateTableDefinition
 };
 
-},{"../../Utilities/Validate":188,"../../constants":190}],175:[function(_dereq_,module,exports){
+},{"../../Utilities/Validate":187,"../../constants":190}],175:[function(_dereq_,module,exports){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
@@ -37499,30 +37383,7 @@ exports.convertToArray = function (value) {
     throw new verror.VError(error, Platform.getResourceString('sqliteSerializer_UnsupportedTypeConversion'), JSON.stringify(value), typeof value, 'Array');    
 };
 
-},{"../../Utilities/Extensions":185,"../../Utilities/Validate":188,"verror":161}],176:[function(_dereq_,module,exports){
-// ----------------------------------------------------------------------------
-// Copyright (c) Microsoft Corporation. All rights reserved.
-// ----------------------------------------------------------------------------
-
-// Module to hold custom definitions of properties, methods, etc used by this library
-// By default, it defines nothing. Users of this library can add custom definitions.
-
-var defs;
-
-function set(definitions) {
-    defs = definitions;
-}
-
-function get() {
-    return defs;
-}
-
-module.exports = {
-    set: set,
-    get: get
-};
-
-},{}],177:[function(_dereq_,module,exports){
+},{"../../Utilities/Extensions":184,"../../Utilities/Validate":187,"verror":161}],176:[function(_dereq_,module,exports){
 (function (global){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
@@ -37547,7 +37408,7 @@ exports.getTarget = function() {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],178:[function(_dereq_,module,exports){
+},{}],177:[function(_dereq_,module,exports){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
@@ -37562,7 +37423,7 @@ if (target === 'Cordova') {
     throw new Error('Unsupported target');
 }
 
-},{"./cordova":171,"./environment":177,"./web":180}],179:[function(_dereq_,module,exports){
+},{"./cordova":171,"./environment":176,"./web":179}],178:[function(_dereq_,module,exports){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
@@ -37577,7 +37438,7 @@ if (target === 'Cordova') {
     throw new Error('Unsupported target');
 }
 
-},{"./cordova/sdkExports":172,"./environment":177,"./web/sdkExports":181}],180:[function(_dereq_,module,exports){
+},{"./cordova/sdkExports":172,"./environment":176,"./web/sdkExports":180}],179:[function(_dereq_,module,exports){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
@@ -37728,18 +37589,17 @@ exports.getSdkInfo = function () {
     };
 };
 
-// FIXME: This function appears platform independent. Move this to MobileServiceLogin.js.
-exports.login = function (startUri, endUri, callback) {
+exports.login = function (options, callback) {
     // Force logins to go over HTTPS because the runtime is hardcoded to redirect
     // the server flow back to HTTPS, and we need the origin to match.
     var findProtocol = /^[a-z]+:/,
         requiredProtocol = 'https:';
-    startUri = startUri.replace(findProtocol, requiredProtocol);
-    if (endUri) {
-        endUri = endUri.replace(findProtocol, requiredProtocol);
+    options.startUri = options.startUri.replace(findProtocol, requiredProtocol);
+    if (options.endUri) {
+        options.endUri = options.endUri.replace(findProtocol, requiredProtocol);
     }
 
-    return getBestProvider(knownLoginUis).login(startUri, endUri, callback);
+    return getBestProvider(knownLoginUis).login(options, callback);
 };
 
 exports.toJson = function (value) {
@@ -37838,7 +37698,7 @@ function getBestProvider(providers) {
 
     throw new Error("Unsupported browser - no suitable providers are available.");
 }
-},{"../../../../package.json":163,"../../LoginUis/BrowserPopup":164,"../../LoginUis/CordovaPopup":165,"../../LoginUis/WebAuthBroker":166,"../../Transports/DirectAjaxTransport":183,"../../Transports/IframeTransport":184,"../../Utilities/Extensions":185,"../../Utilities/Promises":187,"../../Utilities/Validate":188,"../../resources.json":192,"../environment":177}],181:[function(_dereq_,module,exports){
+},{"../../../../package.json":163,"../../LoginUis/BrowserPopup":164,"../../LoginUis/CordovaPopup":165,"../../LoginUis/WebAuthBroker":166,"../../Transports/DirectAjaxTransport":182,"../../Transports/IframeTransport":183,"../../Utilities/Extensions":184,"../../Utilities/Promises":186,"../../Utilities/Validate":187,"../../resources.json":192,"../environment":176}],180:[function(_dereq_,module,exports){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
@@ -37848,7 +37708,7 @@ module.exports = {
     // None as of now.
 };
 
-},{}],182:[function(_dereq_,module,exports){
+},{}],181:[function(_dereq_,module,exports){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
@@ -37955,7 +37815,7 @@ function stringifyTemplateBodies(templates) {
     }
     return result;
 }
-},{"../Platform":178,"../Utilities/Extensions":185,"../Utilities/Validate":188,"../constants":190}],183:[function(_dereq_,module,exports){
+},{"../Platform":177,"../Utilities/Extensions":184,"../Utilities/Validate":187,"../constants":190}],182:[function(_dereq_,module,exports){
 (function (global){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
@@ -38010,7 +37870,7 @@ exports.performRequest = function (request, callback) {
     xhr.send(request.data);
 };
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],184:[function(_dereq_,module,exports){
+},{}],183:[function(_dereq_,module,exports){
 (function (global){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
@@ -38117,7 +37977,7 @@ function whenBridgeLoaded(originRoot, callback) {
 
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../Utilities/PostMessageExchange":186,"../Utilities/Promises":187}],185:[function(_dereq_,module,exports){
+},{"../Utilities/PostMessageExchange":185,"../Utilities/Promises":186}],184:[function(_dereq_,module,exports){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
@@ -38752,7 +38612,7 @@ exports.createError = function (exceptionOrMessage, request) {
 
     return error;
 };
-},{"../Platform":178,"./Validate":188}],186:[function(_dereq_,module,exports){
+},{"../Platform":177,"./Validate":187}],185:[function(_dereq_,module,exports){
 (function (global){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
@@ -38888,7 +38748,7 @@ function parseUrl(url) {
 exports.instance = new PostMessageExchange();
 exports.getOriginRoot = getOriginRoot;
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./Promises":187}],187:[function(_dereq_,module,exports){
+},{"./Promises":186}],186:[function(_dereq_,module,exports){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
@@ -39010,7 +38870,7 @@ exports.getOriginRoot = getOriginRoot;
 
     exports.Promise = Promise;
 })(exports);
-},{}],188:[function(_dereq_,module,exports){
+},{}],187:[function(_dereq_,module,exports){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
@@ -39272,7 +39132,7 @@ exports.length = function (value, length, name) {
     }
 };
 
-},{"../Platform":178,"./Extensions":185}],189:[function(_dereq_,module,exports){
+},{"../Platform":177,"./Extensions":184}],188:[function(_dereq_,module,exports){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
@@ -39346,7 +39206,29 @@ module.exports = function () {
     }
 };
 
-},{"../Platform":178,"./Validate":188}],190:[function(_dereq_,module,exports){
+},{"../Platform":177,"./Validate":187}],189:[function(_dereq_,module,exports){
+// ----------------------------------------------------------------------------
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// ----------------------------------------------------------------------------
+
+// Module to hold custom configuration provided by users of the library.
+
+var configuration;
+
+function set(config) {
+    configuration = config;
+}
+
+function get() {
+    return configuration;
+}
+
+module.exports = {
+    set: set,
+    get: get
+};
+
+},{}],190:[function(_dereq_,module,exports){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
@@ -39385,14 +39267,11 @@ module.exports = {
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
 
-var _ = _dereq_('./Utilities/Extensions');
+var _ = _dereq_('./Utilities/Extensions'),
+    config = _dereq_('./config');
 
-function configure(config) {
-    if (config.definitions) {
-        var definitions = _dereq_('./Platform/definitions');
-
-        definitions.set(config.definitions);
-    }
+function configure(configuration) {
+    config.set(configuration);
 }
 
 /**
@@ -39430,9 +39309,6 @@ var api = { // Modules that need to be exposed outside the SDK for all targets
      */
     Query: _dereq_('azure-query-js').Query,
 
-    /**
-     * 
-     */
     configure: configure
 };
 
@@ -39457,7 +39333,7 @@ for (var i in targetExports) {
 module.exports = api;
 
 
-},{"./MobileServiceClient":167,"./Platform/definitions":176,"./Platform/sdkExports":179,"./Utilities/Extensions":185,"azure-query-js":33}],192:[function(_dereq_,module,exports){
+},{"./MobileServiceClient":167,"./Platform/sdkExports":178,"./Utilities/Extensions":184,"./config":189,"azure-query-js":33}],192:[function(_dereq_,module,exports){
 module.exports={
     "TypeCheckError"                                        : "'{0}' is expected to be a value of type {1}, not {2}.",
     "Validate_NotNullError"                                 : "{0} cannot be null.",
@@ -39879,7 +39755,7 @@ function MobileServiceSyncContext(client) {
 
 module.exports = MobileServiceSyncContext;
 
-},{"../Platform":178,"../Utilities/Extensions":185,"../Utilities/Validate":188,"../Utilities/taskRunner":189,"./operations":196,"./pull":197,"./purge":198,"./push":199,"node-uuid":119}],195:[function(_dereq_,module,exports){
+},{"../Platform":177,"../Utilities/Extensions":184,"../Utilities/Validate":187,"../Utilities/taskRunner":188,"./operations":196,"./pull":197,"./purge":198,"./push":199,"node-uuid":119}],195:[function(_dereq_,module,exports){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
@@ -40042,7 +39918,7 @@ tableHelper.defineQueryOperators(MobileServiceSyncTable);
 
 exports.MobileServiceSyncTable = MobileServiceSyncTable;
 
-},{"../Platform":178,"../Utilities/Extensions":185,"../Utilities/Validate":188,"../tableHelper":201,"azure-query-js":33}],196:[function(_dereq_,module,exports){
+},{"../Platform":177,"../Utilities/Extensions":184,"../Utilities/Validate":187,"../tableHelper":201,"azure-query-js":33}],196:[function(_dereq_,module,exports){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
@@ -40463,7 +40339,7 @@ module.exports = {
     createOperationTableManager: createOperationTableManager
 };
 
-},{"../Platform":178,"../Utilities/Extensions":185,"../Utilities/Validate":188,"../Utilities/taskRunner":189,"../constants":190,"./ColumnType":193,"azure-query-js":33}],197:[function(_dereq_,module,exports){
+},{"../Platform":177,"../Utilities/Extensions":184,"../Utilities/Validate":187,"../Utilities/taskRunner":188,"../constants":190,"./ColumnType":193,"azure-query-js":33}],197:[function(_dereq_,module,exports){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
@@ -40781,7 +40657,7 @@ function createPullManager(client, store, storeTaskRunner, operationTableManager
 
 exports.createPullManager = createPullManager;
 
-},{"../MobileServiceTable":169,"../Platform":178,"../Utilities/Extensions":185,"../Utilities/Validate":188,"../Utilities/taskRunner":189,"../constants":190,"azure-query-js":33}],198:[function(_dereq_,module,exports){
+},{"../MobileServiceTable":169,"../Platform":177,"../Utilities/Extensions":184,"../Utilities/Validate":187,"../Utilities/taskRunner":188,"../constants":190,"azure-query-js":33}],198:[function(_dereq_,module,exports){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
@@ -40870,7 +40746,7 @@ function createPurgeManager(store, storeTaskRunner) {
 
 exports.createPurgeManager = createPurgeManager;
 
-},{"../MobileServiceTable":169,"../Platform":178,"../Utilities/Extensions":185,"../Utilities/Validate":188,"../Utilities/taskRunner":189,"../constants":190,"azure-query-js":33}],199:[function(_dereq_,module,exports){
+},{"../MobileServiceTable":169,"../Platform":177,"../Utilities/Extensions":184,"../Utilities/Validate":187,"../Utilities/taskRunner":188,"../constants":190,"azure-query-js":33}],199:[function(_dereq_,module,exports){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
@@ -41070,7 +40946,7 @@ function createPushManager(client, store, storeTaskRunner, operationTableManager
 
 exports.createPushManager = createPushManager;
 
-},{"../MobileServiceTable":169,"../Platform":178,"../Utilities/Extensions":185,"../Utilities/Validate":188,"../Utilities/taskRunner":189,"../constants":190,"./pushError":200,"azure-query-js":33,"verror":161}],200:[function(_dereq_,module,exports){
+},{"../MobileServiceTable":169,"../Platform":177,"../Utilities/Extensions":184,"../Utilities/Validate":187,"../Utilities/taskRunner":188,"../constants":190,"./pushError":200,"azure-query-js":33,"verror":161}],200:[function(_dereq_,module,exports){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
@@ -41535,7 +41411,7 @@ function handlePushError(pushError, pushHandler) {
 exports.createPushError = createPushError;
 exports.handlePushError = handlePushError;
 
-},{"../Platform":178,"../Utilities/Extensions":185,"../constants":190}],201:[function(_dereq_,module,exports){
+},{"../Platform":177,"../Utilities/Extensions":184,"../constants":190}],201:[function(_dereq_,module,exports){
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
@@ -41579,5 +41455,5 @@ function defineQueryOperators(table) {
 
 exports.defineQueryOperators = defineQueryOperators;
 
-},{"./Platform":178,"azure-query-js":33}]},{},[191])(191)
+},{"./Platform":177,"azure-query-js":33}]},{},[191])(191)
 });
