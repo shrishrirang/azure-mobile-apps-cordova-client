@@ -13,7 +13,6 @@
     <repo>https://github.com/azure/azure-mobile-apps-cordova-client</repo>
     <issue>https://github.com/azure/azure-mobile-apps-js-client/issues</issue>
 
-    <dependency id="cordova-plugin-inappbrowser@1.5.0"/>
     <dependency id="cordova-sqlite-storage@1.4.8"/>
 
     <platform name="windows8">
@@ -53,27 +52,29 @@
     </platform>
 
     <platform name="ios">
-        <preference name="EASYAUTH_APPID" default="zzz" />
-		<config-file parent="/*" target="config.xml">
-			<feature name="EasyAuth">
-				<param name="ios-package" value="EasyAuth" />
-			</feature>
-		</config-file>
-		<config-file target="*-Info.plist" parent="EASYAUTH_APPID">
-				<string>$EASYAUTH_APPID</string>
-		</config-file>
-		<config-file target="*-Info.plist" parent="CFBundleURLTypes">
-			<array>
-				<dict>
-					<key>CFBundleURLName</key>
-					<string>com.microsoft.azure.easyauth</string>
-					<key>CFBundleURLSchemes</key>
-					<array>
-							<string>$EASYAUTH_APPID</string>
-					</array>
-				</dict>
-			</array>
-		</config-file>
+        <!-- This should match the value defined in easyauth.m -->
+        <preference name="EASYAUTH_APPID" default="default-easyauth-app-id" />
+        <config-file parent="/*" target="config.xml">
+            <feature name="EasyAuth">
+                <param name="ios-package" value="EasyAuth" />
+            </feature>
+        </config-file>
+        <!-- This should match the value defined in easyauth.m -->
+        <config-file target="*-Info.plist" parent="com.microsoft.azure.easyauth.appid">
+            <string>$EASYAUTH_APPID</string>
+        </config-file>
+        <config-file target="*-Info.plist" parent="CFBundleURLTypes">
+            <array>
+                <dict>
+                    <key>CFBundleURLName</key>
+                    <string>com.microsoft.azure.easyauth</string>
+                    <key>CFBundleURLSchemes</key>
+                    <array>
+                            <string>$EASYAUTH_APPID</string>
+                    </array>
+                </dict>
+            </array>
+        </config-file>
         <js-module src="www/MobileServices.Cordova.Ext.js" name="AzureMobileServices.Ext" >
             <runs />
         </js-module>
@@ -83,7 +84,7 @@
         <js-module src="www/index.js" name="AzureMobileServices" >
             <clobbers target="WindowsAzure" />
         </js-module>
-		<source-file src="src/ios/easyauth.m" />
+        <source-file src="src/ios/easyauth.m" />
         <framework src="src/ios/AzureEasyAuth.framework" custom="true" />
     </platform>
 

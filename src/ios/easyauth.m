@@ -3,6 +3,10 @@
 #import <Cordova/CDV.h>
 #import <AzureEasyAuth/AzureEasyAuth.h>
 
+// These constants should match the values in plugin.xml
+static const NSString * const defaultEasyAuthId = @"default-easyauth-app-id";
+static const NSString * const appIdKey = @"com.microsoft.azure.easyauth.appid";
+
 @interface EasyAuth : CDVPlugin {
 }
 
@@ -20,7 +24,12 @@
     NSString* loginHost = [command.arguments objectAtIndex:2];
     NSString* loginUriPrefix = [command.arguments objectAtIndex:3];
 
-    NSString *easyAuthAppId = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"EASYAUTH_APPID"];
+    NSString *easyAuthAppId = [[NSBundle mainBundle] objectForInfoDictionaryKey:appIdKey];
+    if ([easyAuthAppId isEqualToString:defaultEasyAuthId]) {
+        CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Variable EASYAUTH_APPID not defined while installing cordova-plugin-ms-azure-mobile-apps plugin"];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        return;
+    }
 
     // FIXME: remove hardcoding
     self.loginController = [[MSLoginSafariViewController alloc] initWithBackendUrl:@"https://shrirs-demo.azurewebsites.net"];
