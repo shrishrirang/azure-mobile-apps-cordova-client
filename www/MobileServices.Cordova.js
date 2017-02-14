@@ -34109,7 +34109,7 @@ exports.supportsCurrentRuntime = function () {
     return true;
 };
 
-exports.login = function (startUri, endUri, callback) {
+exports.login = function (options, callback) {
     /// <summary>
     /// Displays the login UI and calls back on completion
     /// </summary>
@@ -34119,15 +34119,15 @@ exports.login = function (startUri, endUri, callback) {
     // is validated against whitelist on the server; we are only supplying this
     // origin to indicate *which* of the whitelisted origins to use).
     var completionOrigin = PostMessageExchange.getOriginRoot(window.location.href),
-        runtimeOrigin = PostMessageExchange.getOriginRoot(startUri),
+        runtimeOrigin = PostMessageExchange.getOriginRoot(options.startUri),
         // IE does not support popup->opener postMessage calls, so we have to
         // route the message via an iframe
         useIntermediateIframe = window.navigator.userAgent.indexOf("MSIE") >= 0 || window.navigator.userAgent.indexOf("Trident") >= 0,
         intermediateIframe = useIntermediateIframe && createIntermediateIframeForLogin(runtimeOrigin, completionOrigin),
         completionType = useIntermediateIframe ? "iframe" : "postMessage";
 
-    startUri += startUri.indexOf('?') == -1 ? '?' : '&';
-    startUri += "completion_type=" + completionType + "&completion_origin=" + encodeURIComponent(completionOrigin);
+    options.startUri += options.startUri.indexOf('?') == -1 ? '?' : '&';
+    options.startUri += "completion_type=" + completionType + "&completion_origin=" + encodeURIComponent(completionOrigin);
 
     // Browsers don't allow postMessage to a file:// URL (except by setting origin to "*", which is unacceptable)
     // so abort the process early with an explanation in that case.
@@ -34137,7 +34137,7 @@ exports.login = function (startUri, endUri, callback) {
         return;
     }
 
-    var loginWindow = window.open(startUri, "_blank", "location=no,resizable=yes"),
+    var loginWindow = window.open(options.startUri, "_blank", "location=no,resizable=yes"),
         complete = function(errorValue, oauthValue) {
             // Clean up event handlers, windows, frames, ...
             window.clearInterval(checkForWindowClosedInterval);
@@ -34220,7 +34220,7 @@ function createIntermediateIframeForLogin(runtimeOrigin, completionOrigin) {
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
 
-var config = _dereq_('../config').get();
+var config = _dereq_('../config');
 
 var requiredCordovaVersion = { major: 3, minor: 0 };
 
@@ -34247,8 +34247,9 @@ function currentCordovaVersion() {
 
 // Optional callback accepting (error, user) parameters.
 exports.login = function (options, callback) {
-    if (config && config.login && config.login.loginWithOptions) {
-        return config.login.loginWithOptions(options, callback);
+    var configuration = config.get();
+    if (configuration && configuration.login && configuration.login.loginWithOptions) {
+        return configuration.login.loginWithOptions(options, callback);
     }
 
     callback(new Error('Cordova login implementation not provided!'));
@@ -34270,7 +34271,7 @@ exports.supportsCurrentRuntime = function () {
     return isWebAuthBrokerAvailable();
 };
 
-exports.login = function (startUri, endUri, callback) {
+exports.login = function (options, callback) {
     /// <summary>
     /// Displays the login UI and calls back on completion
     /// </summary>
@@ -34344,24 +34345,24 @@ exports.login = function (startUri, endUri, callback) {
     // be registered with the Microsoft Azure Mobile Service, but it provides a better 
     // experience as HTTP cookies are supported so that users do not have to
     // login in everytime the application is launched.
-    if (endUri) {
-        endUri = new Windows.Foundation.Uri(endUri);
+    if (options.endUri) {
+        options.endUri = new Windows.Foundation.Uri(options.endUri);
     } else {
         var ssoQueryParameter = {},
             redirectUri = windowsWebAuthBroker.getCurrentApplicationCallbackUri().absoluteUri;
 
         ssoQueryParameter[easyAuthRedirectUriKey] = redirectUri;
-        startUri = _.url.combinePathAndQuery(startUri, _.url.getQueryString(ssoQueryParameter));
+        options.startUri = _.url.combinePathAndQuery(options.startUri, _.url.getQueryString(ssoQueryParameter));
     }
     
-    startUri = new Windows.Foundation.Uri(startUri);
+    options.startUri = new Windows.Foundation.Uri(options.startUri);
     
     // If authenticateAndContinue method is available, we should use it instead of authenticateAsync.
     // In the event that it exists, but fails (which is the case with Win 10), we fallback to authenticateAsync.
     var isLoginWindowLaunched;
     try {
         WinJS.Application.addEventListener('activated', webAuthBrokerContinuationCallback, true);
-        windowsWebAuthBroker.authenticateAndContinue(startUri, endUri);
+        windowsWebAuthBroker.authenticateAndContinue(options.startUri, options.endUri);
 
         isLoginWindowLaunched = true;
     } catch (ex) {
@@ -34369,7 +34370,7 @@ exports.login = function (startUri, endUri, callback) {
     }
 
     if (!isLoginWindowLaunched) {
-        windowsWebAuthBroker.authenticateAsync(noneWebAuthOptions, startUri, endUri)
+        windowsWebAuthBroker.authenticateAsync(noneWebAuthOptions, options.startUri, options.endUri)
         .done(webAuthBrokerSuccessCallback, webAuthBrokerErrorCallback);
     }
 };
@@ -35372,7 +35373,7 @@ function loginWithLoginControl(login, provider, useSingleSignOn, parameters, cal
     queryParameters[sessionModeKey] = sessionModeValueToken;
 
     startUri = _.url.combinePathSegments(loginHost, loginUriPrefix, provider);
-    startUri = _.url.combinePathAndQuery(startUri, _.url.getQueryString(queryParams));
+    startUri = _.url.combinePathAndQuery(startUri, _.url.getQueryString(queryParameters));
 
     // If not single sign-on, then we need to construct a non-null end uri.
     if (!useSingleSignOn) {
@@ -37589,17 +37590,17 @@ exports.getSdkInfo = function () {
 };
 
 // FIXME: This function appears platform independent. Move this to MobileServiceLogin.js.
-exports.login = function (startUri, endUri, callback) {
+exports.login = function (options, callback) {
     // Force logins to go over HTTPS because the runtime is hardcoded to redirect
     // the server flow back to HTTPS, and we need the origin to match.
     var findProtocol = /^[a-z]+:/,
         requiredProtocol = 'https:';
-    startUri = startUri.replace(findProtocol, requiredProtocol);
-    if (endUri) {
-        endUri = endUri.replace(findProtocol, requiredProtocol);
+    options.startUri = options.startUri.replace(findProtocol, requiredProtocol);
+    if (options.endUri) {
+        options.endUri = options.endUri.replace(findProtocol, requiredProtocol);
     }
 
-    return getBestProvider(knownLoginUis).login(startUri, endUri, callback);
+    return getBestProvider(knownLoginUis).login(options, callback);
 };
 
 exports.toJson = function (value) {
