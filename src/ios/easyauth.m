@@ -22,6 +22,9 @@
 
     NSString *easyAuthAppId = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"EASYAUTH_APPID"];
 
+    // FIXME: remove hardcoding
+    self.loginController = [[MSLoginSafariViewController alloc] initWithBackendUrl:@"https://shrirs-demo.azurewebsites.net"];
+
     [self.loginController loginWithProvider:provider urlScheme:easyAuthAppId parameters:parameters controller:self.viewController animated:NO completion:^(MSUser * _Nullable user, NSError * _Nullable error) {
         if (user) {
             NSDictionary *userDict = @{
@@ -41,25 +44,9 @@
     }];
 }
 
-- (void)pluginInitialize {
-    self.loginController = [[MSLoginSafariViewController alloc] initWithBackendUrl:@"https://shrirs-demo.azurewebsites.net"];
-}
-
-- (void)onReset {
-    // FIXME - implement overrides
-}
-
-/* NOTE: calls into JavaScript must not call or trigger any blocking UI, like alerts */
-- (void)handleOpenURL:(NSNotification*)notification
-{
-    // override to handle urls sent to your app
-    // register your url schemes in your App-Info.plist
-    
+- (void)handleOpenURL:(NSNotification*)notification {
     NSURL* url = [notification object];
-    
     [self.loginController resumeWithURL:url];
-
-    // FIXME: Error
 }
 
 @end
